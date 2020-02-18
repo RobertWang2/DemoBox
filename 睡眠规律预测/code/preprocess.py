@@ -12,6 +12,7 @@ class FirstDataPreprocess:
     2.Time in bed 同1
     3.根据Sleep score确定睡眠质量（80~100是好，60~79是一般，0~59）
     4.数据归一化（需要后序处理）
+    5.删除无用字段
     '''
     def __init__(self,basepath):
         self.base_path = basepath
@@ -37,13 +38,11 @@ class FirstDataPreprocess:
         80-100: 2
         注意：因为储存只需要很少的字节，如果数据过大，可以转更小的字节节省内存
         '''
-
-        if row >= 80 and row <= 100:
-            return 2
-        elif row >= 60 and row <= 79:
+        if row >= 75:
             return 1
         else:
             return 0
+
     def preprocess(self):
         self.data['Start'] = self.data['Start'].apply(self._time_preprocess)
         self.data['End'] = self.data['End'].apply(self._time_preprocess)
@@ -52,7 +51,7 @@ class FirstDataPreprocess:
         self.data['sleep quality'] = self.data['Sleep score'].apply(self._score_compute)
         self.data = self.data.drop(['Sleep score','睡眠质量（好，一般，不好）'],axis = 1)
         print(self.data.head())
-        self.data.to_csv('../data/记录数据2.csv',index=False)
+        self.data.to_csv('../data/sleepdata2.csv',index=False)
 
 class SecondDataPreprocess:
     '''
@@ -126,10 +125,8 @@ class SecondDataPreprocess:
         self.Sleep_score_low = self.Sleep_score_mean - 2 * self.Sleep_score_std
         self.Sleep_score_high = self.Sleep_score_mean + 2 * self.Sleep_score_std
         self.data['regular'] = self.data.apply(self._score_compute,axis=1)
-        # print(self.data.head())
-        # return self.data
-        # print(self.data['regular'].unique())
-        self.data.to_csv('../data/sleepdata2.csv',index=False)
+        self.data = self.data.drop(['Sleep score'],axis=1)
+        self.data.to_csv('../data/记录数据2.csv',index=False)
 
 if __name__ == '__main__':
     base_path = r'E:\project\DemoBox\睡眠规律预测\data'
